@@ -1,0 +1,125 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[russian]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[margin=2cm]{geometry}
+
+\begin{document}
+
+\begin{center}
+    {\Large Построение ДКА по регулярному выражению на основе алгоритма Глушкова}
+\end{center}
+
+\section*{Постановка}
+
+На вход подаётся регулярное выражение. Надо:
+
+\begin{enumerate}
+    \item разобрать его;
+    \item построить по нему автомат на основе алгоритма Глушкова;
+    \item получить ДКА;
+    \item сгенерировать latex код его диаграммы.
+\end{enumerate}
+
+Язык регулярных выражений:
+
+\[
+R ::= 0 \mid 1 \mid a \mid (R \mid R) \mid RR \mid R^*
+\]
+
+$a$ --- символ алфавита, $0$ обозначает пустой язык, $1$ --- пустое слово.
+
+\section*{Алгоритм}
+
+Регулярное выражение линеаризуется -- все вхождения символа получают номер.
+Например $(a \mid b)^*abb$ ->$(a_1 \mid b_2)^* a_3 b_4 b_5.$
+Дальше вычисляем:
+
+\begin{enumerate}
+    \item $\text{nullable}(R)$ --- допускает ли выражение пустое слово;
+    \item $\text{firstpos}(R)$ --- позиции, с которых может начинаться слово;
+    \item $\text{lastpos}(R)$ --- позиции, которыми слово может заканчиваться;
+    \item $\text{followpos}(i)$ --- позиции, которые могут идти сразу после позиции $i$.
+\end{enumerate}
+
+\section*{Рекурсивные правила}
+
+Для объединения:
+
+\[
+\text{firstpos}(R_1 \mid R_2) = \text{firstpos}(R_1) \cup \text{firstpos}(R_2)
+\]
+
+\[
+\text{lastpos}(R_1 \mid R_2) = \text{lastpos}(R_1) \cup \text{lastpos}(R_2)
+\]
+
+Для конкатенации:
+
+\[
+\text{firstpos}(R_1R_2) =
+\begin{cases}
+\text{firstpos}(R_1) \cup \text{firstpos}(R_2), & \text{если } \text{nullable}(R_1) \\
+\text{firstpos}(R_1), & \text{иначе}
+\end{cases}
+\]
+
+\[
+\text{lastpos}(R_1R_2) =
+\begin{cases}
+\text{lastpos}(R_1) \cup \text{lastpos}(R_2), & \text{если } \text{nullable}(R_2) \\
+\text{lastpos}(R_2), & \text{иначе}
+\end{cases}
+\]
+
+И для каждой позиции из $\text{lastpos}(R_1)$ в множество $\text{followpos}$ добавляются все позиции из $\text{firstpos}(R_2)$.
+
+Для звезды Клини $R^*$:
+
+\[
+\text{nullable}(R^*) = \text{True}
+\]
+
+\[
+\text{firstpos}(R^*) = \text{firstpos}(R)
+\]
+
+\[
+\text{lastpos}(R^*) = \text{lastpos}(R)
+\]
+
+И для каждой позиции из $\text{lastpos}(R)$ в $\text{followpos}$ добавляются все позиции из $\text{firstpos}(R)$.
+
+\section*{Построение ДКА}
+
+Сначала по вычисленным множествам задаётся автомат Глушкова:
+
+\begin{enumerate}
+    \item начальное состояние соответствует началу слова;
+    \item состояния, помеченные последними позициями, принимающие;
+    \item переходы определяются через $\text{firstpos}$ и $\text{followpos}$.
+\end{enumerate}
+
+После этого строится ДКА методом подмножеств.
+Состояние ДКА -- множество позиций исходного позиционного автомата.
+
+Начальное состояние ДКА: $\varnothing$
+
+Оно является принимающим $\longleftrightarrow$ исходное регулярное выражение допускает пустое слово.
+
+\section*{Результат работы}
+
+Программа печатает:
+
+\begin{enumerate}
+    \item список размеченных позиций
+    \item множества $FirstPos$, $LastPos$, $FollowPos$
+    \item список состояний ДКА
+    \item список переходов ДКА.
+\end{enumerate}
+
+И программа создаёт .tex - файл с TikZ диаграммой автомата.
+
+\end{document}

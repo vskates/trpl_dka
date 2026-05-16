@@ -1,0 +1,8 @@
+*.o
+*.hi
+*.aux
+*.log
+*.pdf
+example.tex
+dfa.tex
+dka
